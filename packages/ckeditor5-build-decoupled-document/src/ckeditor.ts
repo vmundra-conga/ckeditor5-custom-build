@@ -8,16 +8,34 @@ import { DecoupledEditor as DecoupledEditorBase } from '@ckeditor/ckeditor5-edit
 
 import { Essentials } from '@ckeditor/ckeditor5-essentials';
 import { Alignment } from '@ckeditor/ckeditor5-alignment';
-import { FontSize, FontFamily, FontColor, FontBackgroundColor } from '@ckeditor/ckeditor5-font';
+import {
+	FontSize,
+	FontFamily,
+	FontColor,
+	FontBackgroundColor,
+} from '@ckeditor/ckeditor5-font';
 import { CKFinderUploadAdapter } from '@ckeditor/ckeditor5-adapter-ckfinder';
 import { Autoformat } from '@ckeditor/ckeditor5-autoformat';
-import { Bold, Italic, Strikethrough, Underline } from '@ckeditor/ckeditor5-basic-styles';
+import {
+	Bold,
+	Italic,
+	Strikethrough,
+	Underline,
+} from '@ckeditor/ckeditor5-basic-styles';
 import { BlockQuote } from '@ckeditor/ckeditor5-block-quote';
 import { CKBox } from '@ckeditor/ckeditor5-ckbox';
 import { CKFinder } from '@ckeditor/ckeditor5-ckfinder';
 import { EasyImage } from '@ckeditor/ckeditor5-easy-image';
 import { Heading } from '@ckeditor/ckeditor5-heading';
-import { Image, ImageCaption, ImageResize, ImageStyle, ImageToolbar, ImageUpload, PictureEditing } from '@ckeditor/ckeditor5-image';
+import {
+	Image,
+	ImageCaption,
+	ImageResize,
+	ImageStyle,
+	ImageToolbar,
+	ImageUpload,
+	PictureEditing,
+} from '@ckeditor/ckeditor5-image';
 import { Indent, IndentBlock } from '@ckeditor/ckeditor5-indent';
 import { Link } from '@ckeditor/ckeditor5-link';
 import { List, ListProperties } from '@ckeditor/ckeditor5-list';
@@ -27,6 +45,39 @@ import { PasteFromOffice } from '@ckeditor/ckeditor5-paste-from-office';
 import { Table, TableToolbar } from '@ckeditor/ckeditor5-table';
 import { TextTransformation } from '@ckeditor/ckeditor5-typing';
 import { CloudServices } from '@ckeditor/ckeditor5-cloud-services';
+import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
+import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
+
+class Timestamp extends Plugin {
+	init() {
+		const editor = this.editor;
+		// The button must be registered among the UI components of the editor
+		// to be displayed in the toolbar.
+		editor.ui.componentFactory.add('timestamp', () => {
+			// The button will be an instance of ButtonView.
+			const button = new ButtonView();
+
+			button.set({
+				label: 'Timestamp',
+				withText: true,
+			});
+
+			button.on('execute', () => {
+				const now = new Date();
+
+				// Change the model using the model writer.
+				editor.model.change((writer) => {
+					// Insert the text at the user's current position.
+					editor.model.insertContent(
+						writer.createText(now.toString())
+					);
+				});
+			});
+
+			return button;
+		});
+	}
+}
 
 export default class DecoupledEditor extends DecoupledEditorBase {
 	public static override builtinPlugins = [
@@ -65,20 +116,43 @@ export default class DecoupledEditor extends DecoupledEditorBase {
 		PictureEditing,
 		Table,
 		TableToolbar,
-		TextTransformation
+		TextTransformation,
+		Timestamp,
 	];
 
 	public static override defaultConfig = {
 		toolbar: {
 			items: [
-				'undo', 'redo',
-				'|', 'heading',
-				'|', 'fontfamily', 'fontsize', 'fontColor', 'fontBackgroundColor',
-				'|', 'bold', 'italic', 'underline', 'strikethrough',
-				'|', 'link', 'uploadImage', 'insertTable', 'blockQuote', 'mediaEmbed',
-				'|', 'alignment',
-				'|', 'bulletedList', 'numberedList', 'outdent', 'indent'
-			]
+				'undo',
+				'redo',
+				'|',
+				'heading',
+				'|',
+				'fontfamily',
+				'fontsize',
+				'fontColor',
+				'fontBackgroundColor',
+				'|',
+				'bold',
+				'italic',
+				'underline',
+				'strikethrough',
+				'|',
+				'link',
+				'uploadImage',
+				'insertTable',
+				'blockQuote',
+				'mediaEmbed',
+				'|',
+				'alignment',
+				'|',
+				'bulletedList',
+				'numberedList',
+				'outdent',
+				'indent',
+				'|',
+				'timestamp',
+			],
 		},
 		image: {
 			resizeUnit: 'px' as const,
@@ -88,24 +162,20 @@ export default class DecoupledEditor extends DecoupledEditorBase {
 				'imageStyle:breakText',
 				'|',
 				'toggleImageCaption',
-				'imageTextAlternative'
-			]
+				'imageTextAlternative',
+			],
 		},
 		table: {
-			contentToolbar: [
-				'tableColumn',
-				'tableRow',
-				'mergeTableCells'
-			]
+			contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells'],
 		},
 		list: {
 			properties: {
 				styles: true,
 				startIndex: true,
-				reversed: true
-			}
+				reversed: true,
+			},
 		},
 		// This value must be kept in sync with the language defined in webpack.config.js.
-		language: 'en'
+		language: 'en',
 	};
 }
